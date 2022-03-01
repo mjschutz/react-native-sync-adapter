@@ -11,6 +11,7 @@ import android.content.SyncRequest;
 import android.content.SyncResult;
 import android.os.Build;
 import android.os.Bundle;
+import android.net.Uri;
 
 class SyncAdapter extends AbstractThreadedSyncAdapter {
 
@@ -21,8 +22,19 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Intent service = new Intent(getContext(), HeadlessService.class);
-        getContext().startService(service);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getContext().startForegroundService(service);
+        } else {
+            getContext().startService(service);
+        }
     }
+	
+	/**
+     * Method to notify ContentResolver that a change on data happen and need to sync
+     */
+	public static void notifyChange(Context context) {
+		context.getContentResolver().notifyChange(Uri.parse("notifyChange"), null, ContentResolver.NOTIFY_SYNC_TO_NETWORK);
+	}
 
     /**
      * Helper method to have the sync adapter sync immediately

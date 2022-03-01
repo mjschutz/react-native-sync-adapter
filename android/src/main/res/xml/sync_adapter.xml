@@ -5,5 +5,5 @@
     android:allowParallelSyncs="false"
     android:contentAuthority="@string/rnsb_content_authority"
     android:isAlwaysSyncable="true"
-    android:supportsUploading="false"
+    android:supportsUploading="true"
     android:userVisible="@string/rnsb_user_visible"/>
