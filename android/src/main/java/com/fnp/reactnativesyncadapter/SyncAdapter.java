@@ -49,8 +49,7 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     static Account getSyncAccount(Context context, int syncInterval, int syncFlexTime) {
         // Get an instance of the Android account manager
-        AccountManager accountManager =
-                (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+        AccountManager accountManager = AccountManager.get(context);
 
         // Create the account type and default account
         Account newAccount = new Account(context.getString(R.string.app_name),
@@ -78,12 +77,14 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private static void onAccountCreated(Account newAccount, Context context, int syncInterval, int syncFlexTime) {
-        // Since we've created an account
-        SyncAdapter.configurePeriodicSync(context, syncInterval, syncFlexTime);
-
-        // Without calling setSyncAutomatically, our periodic sync will not be enabled
+		ContentResolver.setIsSyncable(newAccount, context.getString(R.string.rnsb_content_authority), 1);
+		
+		// Without calling setSyncAutomatically, our periodic sync will not be enabled
         ContentResolver.setSyncAutomatically(newAccount,
                 context.getString(R.string.rnsb_content_authority), true);
+				
+        // Since we've created an account
+        SyncAdapter.configurePeriodicSync(context, syncInterval, syncFlexTime);
     }
 
     /**
