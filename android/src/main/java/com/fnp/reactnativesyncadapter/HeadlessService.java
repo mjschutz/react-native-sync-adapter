@@ -27,23 +27,22 @@ public class HeadlessService extends HeadlessJsTaskService {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			NotificationChannel chan = new NotificationChannel(
-					"ForegroundNotifChannelId",
-					"SyncAdapter Foreground Service",
+					getString(R.string.rnsb_notification_channel_id),
+					getText(R.string.rnsb_notification_name),
 					NotificationManager.IMPORTANCE_LOW);
-			chan.setLightColor(Color.BLUE);
 			chan.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
 
 			NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 			assert manager != null;
 			manager.createNotificationChannel(chan);
 
-			NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "ForegroundNotifChannelId");
+			NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, getString(R.string.rnsb_notification_channel_id));
 			Notification notification = notificationBuilder.setOngoing(true)
 					.setSmallIcon(R.mipmap.ic_launcher)
 					.setContentTitle(getText(R.string.rnsb_notification_text))
 					.setPriority(NotificationManager.IMPORTANCE_LOW)
 					.setCategory(Notification.CATEGORY_SERVICE)
-					.setChannelId("ForegroundNotifChannelId")
+					.setChannelId(getString(R.string.rnsb_notification_channel_id))
 					.build();
 
 			startForeground(1, notification);

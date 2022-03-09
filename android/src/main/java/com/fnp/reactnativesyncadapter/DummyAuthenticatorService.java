@@ -14,6 +14,8 @@ public class DummyAuthenticatorService extends Service {
 
     @Override
     public void onCreate() {
+		super.onCreate();
+
         // Create a new authenticator object
         mAuthenticator = new DummyAuthenticator(this);
     }
