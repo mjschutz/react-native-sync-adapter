@@ -18,8 +18,6 @@ import android.net.Uri;
 
 import java.util.concurrent.CountDownLatch;
 
-import com.facebook.react.HeadlessJsTaskService;
-
 class SyncAdapter extends AbstractThreadedSyncAdapter implements HeadlessService.Callback {
 
     private CountDownLatch doneSignal = new CountDownLatch(1);
