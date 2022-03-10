@@ -6,6 +6,5 @@
 	<string name="rnsb_notification_name" translatable="false">React Native SyncAdapter Foreground Service</string>
 	<string name="rnsb_notification_text" translatable="false">App is running on foreground</string>
 	<string name="rnsb_notification_channel_id" translatable="false">RNSAHeadlessServiceFgChId</string>
-    <string name="rnsb_allow_foreground">false</string>
     <string name="rnsb_user_visible">false</string>
 </resources>

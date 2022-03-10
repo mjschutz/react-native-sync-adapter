@@ -22,19 +22,6 @@ import com.facebook.react.bridge.ReactMethod;
 
     @ReactMethod
     public void syncImmediately(int syncInterval, int syncFlexTime) {
-        boolean allowForeground = Boolean.valueOf(getReactApplicationContext().getString(R.string.rnsb_allow_foreground));
-
-        if (!allowForeground && HeadlessService.isAppOnForeground(getReactApplicationContext())) {
-            if (getCurrentActivity() != null) {
-                Toast.makeText(
-                        getCurrentActivity(),
-                        "This sync task has not been configured to run on the foreground!",
-                        Toast.LENGTH_SHORT)
-                        .show();
-            }
-            return;
-        }
-
         SyncAdapter.syncImmediately(getReactApplicationContext(), syncInterval, syncFlexTime);
     }
 

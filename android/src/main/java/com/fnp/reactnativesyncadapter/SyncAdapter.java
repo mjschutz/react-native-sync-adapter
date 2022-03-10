@@ -7,25 +7,62 @@ import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SyncRequest;
 import android.content.SyncResult;
+import android.content.ComponentName;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.net.Uri;
 
-class SyncAdapter extends AbstractThreadedSyncAdapter {
+import java.util.concurrent.CountDownLatch;
+
+import com.facebook.react.HeadlessJsTaskService;
+
+class SyncAdapter extends AbstractThreadedSyncAdapter implements HeadlessService.Callback {
+
+    private CountDownLatch doneSignal = new CountDownLatch(1);
+    private Intent mIntent;
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder binder) {
+            HeadlessService service = ((HeadlessService.LocalBinder)binder).getService();
+            service.notifyOnTaskCompletion(SyncAdapter.this);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+        }
+    };
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
     }
+    
+    @Override
+    public void onTaskCompletion() {
+        getContext().unbindService(mConnection);
+        doneSignal.countDown();
+    }
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        Intent service = new Intent(getContext(), HeadlessService.class);
+        mIntent = new Intent(getContext(), HeadlessService.class);
+        Context context = getContext();
+        
+        context.bindService(mIntent, mConnection, 0);
+        
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getContext().startForegroundService(service);
+            context.startForegroundService(mIntent);
         } else {
-            getContext().startService(service);
+            context.startService(mIntent);
+        }
+
+        try {
+            doneSignal.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 	

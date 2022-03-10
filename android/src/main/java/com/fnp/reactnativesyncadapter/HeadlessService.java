@@ -8,23 +8,50 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
 import android.os.Bundle;
 import android.os.Build;
 import android.graphics.Color;
+import android.support.annotation.Nullable;
 
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.jstasks.HeadlessJsTaskConfig;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HeadlessService extends HeadlessJsTaskService {
 
     private static final String TASK_ID = "TASK_SYNC_ADAPTER";
-	
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
+    
+    private final IBinder mBinder = new LocalBinder();
+    private List<Callback> mCallbacks = new ArrayList<>();
+    
+    public class LocalBinder extends Binder {
+        HeadlessService getService() {
+            return HeadlessService.this;
+        }
+    }
+    
+    public interface Callback {
+        void onTaskCompletion();
+    }
+    
+    @Override
+    public @Nullable
+    IBinder onBind(Intent intent) {
+        return mBinder;
+    }
+    
+    public void notifyOnTaskCompletion(Callback cb) {
+        mCallbacks.add(cb);
+    }
+    
+    @Override
+	public int onStartCommand(Intent intent, int flags, int startId) {        
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			NotificationChannel chan = new NotificationChannel(
 					getString(R.string.rnsb_notification_channel_id),
@@ -50,23 +77,24 @@ public class HeadlessService extends HeadlessJsTaskService {
 		
 		return super.onStartCommand(intent, flags, startId);
 	}
+    
+    @Override
+    public void onHeadlessJsTaskFinish(int taskId) {
+        super.onHeadlessJsTaskFinish(taskId);
+        for (Callback cb : mCallbacks) {
+            cb.onTaskCompletion();
+        }
+        mCallbacks.clear();
+    }
 
     @Override
     protected HeadlessJsTaskConfig getTaskConfig(Intent intent) {
-        boolean allowForeground = Boolean.parseBoolean(getString(R.string.rnsb_allow_foreground));
-
-        if(allowForeground || !isAppOnForeground(this)) {
-            Bundle extras = intent.getExtras();
-            WritableMap data = extras != null ? Arguments.fromBundle(extras) : Arguments.createMap();
-            return new HeadlessJsTaskConfig(
-                    TASK_ID,
-                    data,
-                    Long.valueOf(getString(R.string.rnsb_default_timeout)),
-                    allowForeground);
-        }
-
-        stopSelf();
-        return null;
+        Bundle extras = intent.getExtras();
+        return new HeadlessJsTaskConfig(
+                TASK_ID,
+                extras != null ? Arguments.fromBundle(extras) : Arguments.createMap(),
+                Long.valueOf(getString(R.string.rnsb_default_timeout)),
+                true);
     }
 
     // From https://facebook.github.io/react-native/docs/headless-js-android.html
