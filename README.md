@@ -23,7 +23,7 @@ This library is only for Android. If you want to do something similar on iOS, I 
 ## Getting started
 
 ```
-yarn add react-native-sync-adapter
+yarn add @mjschutz/react-native-sync-adapter
 ```
 
 ### Installation
@@ -84,12 +84,23 @@ By default the user will not be able to manually enable/disable syncs through th
 
 ### Running the task while the app is in the foreground
 
-By default, the sync task will only run if the app is **not** in the foreground. This is one of the default [caveats](https://facebook.github.io/react-native/docs/headless-js-android.html#caveats) from HeadlessJS.
-If you want to override this behavior, you can, one more time overriding `strings.xml`:
+~~By default, the sync task will only run if the app is **not** in the foreground. This is one of the default [caveats](https://facebook.github.io/react-native/docs/headless-js-android.html#caveats) from HeadlessJS.~~
+
+The sync task will always run on foreground. For foreground services to run (since Android 8.0), a notification is show to the user to inform that a foreground service is running, to change the info about the notification, you need to override `strings.xml`:
 
 ```xml
-<string name="rnsb_allow_foreground">true</string>
+<string name="rnsb_notification_name" translatable="false">React Native SyncAdapter Foreground Service</string>
+<string name="rnsb_notification_text" translatable="false">App is running on foreground</string>
+<string name="rnsb_notification_channel_id" translatable="false">RNSAHeadlessServiceFgChId</string>
 ```
+
+Each option is described bellow:
+
+* rnsb_notification_name - The user visible name of the notification channel.
+* rnsb_notification_text - The text/title of the notification
+* rnsb_notification_channel_id - The id of the notification channel. Must be unique per package.
+
+The notification will use the App icon (res/mipmap-(hdpi|mdpi|...)/ic_launcher) as the notification icon when displayed.
 
 ### Broadcast Receiver
 
@@ -130,8 +141,6 @@ Object: {
 }
 ```
 
-Be aware that for this method to work (if you call it from inside your app) you need to allow the task to [work on the foreground](https://github.com/ferrannp/react-native-sync-adapter#running-the-task-while-the-app-is-in-the-foreground).
-
 ## Running example
 
 You can try this library running the `example` app:
@@ -146,4 +155,4 @@ Then just run:
 yarn android
 ```
 
-**Be careful**: The installed example app will trigger a sync around every minute (so it is easy to see that is working). If you debug the app, you should be able to see the HeadlessJS ouputing: `Headless JS task was fired!` (remember not to have the app on the foreground: Unless you override this behavior). After you try it, I recommend to uninstall the app so you don't harm your device battery life.
+**Be careful**: The installed example app will trigger a sync around every minute (or 15 minutes since Android 7.0). If you debug the app, you should be able to see the HeadlessJS outputing: `Headless JS task was fired!`. After you try it, I recommend to uninstall the app so you don't harm your device battery life.
