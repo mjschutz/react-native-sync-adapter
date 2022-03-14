@@ -52,7 +52,7 @@ AppRegistry.registerHeadlessTask('TASK_SYNC_ADAPTER', () => TestTask);
 Then, for example, on your root component:
 ```js
 import {useEffect} from 'react';
-import SyncAdapter from 'react-native-sync-adapter';
+import SyncAdapter from '@mjschutz/react-native-sync-adapter';
 
 useEffect(() => {
   SyncAdapter.init({
